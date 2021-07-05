@@ -35,6 +35,7 @@ package com.raywenderlich.cinematic.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
@@ -57,23 +58,25 @@ class AuthActivity : AppCompatActivity() {
       startActivity(Intent(this, MainActivity::class.java))
     }
     viewModel.showLogin.observe(this) {
-      showLogin()
+      showLogin(it)
     }
     viewModel.showSignUp.observe(this) {
-      showSignup()
+      showSignup(it)
     }
   }
 
-  private fun showLogin() {
+  private fun showLogin(sharedView: View) {
     supportFragmentManager.commit {
       replace(R.id.fragmentContainer, LoginFragment.newInstance())
+      addSharedElement(sharedView, "logo_transition_name")
       addToBackStack(null)
     }
   }
 
-  private fun showSignup() {
+  private fun showSignup(sharedView: View) {
     supportFragmentManager.commit {
       replace(R.id.fragmentContainer, SignupFragment.newInstance())
+      addSharedElement(sharedView, "logo_transition_name")
       addToBackStack(null)
     }
   }

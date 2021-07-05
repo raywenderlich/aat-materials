@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="auth_logo_size">77sp</dimen>
+  <dimen name="login_logo_size">40sp</dimen>
+</resources>

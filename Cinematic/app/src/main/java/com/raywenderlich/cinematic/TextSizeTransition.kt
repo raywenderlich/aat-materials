@@ -31,60 +31,63 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.raywenderlich.cinematic.login
+package com.raywenderlich.cinematic
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
+import android.animation.Animator
+import android.animation.ObjectAnimator
+import android.content.Context
+import android.util.AttributeSet
+import android.util.Property
+import android.util.TypedValue
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import com.raywenderlich.cinematic.databinding.FragmentAuthBinding
-import com.google.android.material.transition.MaterialSharedAxis
+import android.widget.TextView
+import androidx.transition.Transition
+import androidx.transition.TransitionValues
 
-class AuthFragment : Fragment() {
-  private val viewModel by activityViewModels<AuthViewModel>()
+class TextSizeTransition : Transition {
+  constructor()
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 
-  private var _binding: FragmentAuthBinding? = null
-  private val binding get() = _binding!!
+  override fun getTransitionProperties() = properties
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-      duration = 1000
-    }
-    enterTransition = null
-//    reenterTransition = Fade()
-    reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
-//    reenterTransition = Slide()
+  override fun captureStartValues(transitionValues: TransitionValues) {
+    captureTextSize(transitionValues)
   }
 
-  override fun onCreateView(
-      inflater: LayoutInflater, container: ViewGroup?,
-      savedInstanceState: Bundle?
-  ): View {
-    // Inflate the layout for this fragment
-    _binding = FragmentAuthBinding.inflate(inflater)
-    return binding.root
+  override fun captureEndValues(transitionValues: TransitionValues) {
+    captureTextSize(transitionValues)
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    binding.signIn.setOnClickListener {
-      viewModel.onSignInPressed(binding.logo)
-    }
-    binding.newSignUp.setOnClickListener {
-      viewModel.onNewUserPressed(binding.logo)
+  private fun captureTextSize(transitionValues: TransitionValues) {
+    (transitionValues.view as? TextView)?.let { textView ->
+      transitionValues.values[textSizeProp] = textView.textSize
     }
   }
 
-  override fun onDestroyView() {
-    super.onDestroyView()
-    _binding = null
+  override fun createAnimator(
+    sceneRoot: ViewGroup,
+    startValues: TransitionValues?,
+    endValues: TransitionValues?
+  ): Animator? {
+    if (startValues == null || endValues == null) {
+      return null
+    }
+    val startSize = startValues.values[textSizeProp] as Float
+    val endSize = endValues.values[textSizeProp] as Float
+    val view = endValues.view as TextView
+    view.setTextSize(TypedValue.COMPLEX_UNIT_PX, startSize)
+    return ObjectAnimator.ofFloat(view, textSizeProperty, startSize, endSize)
   }
 
   companion object {
-    @JvmStatic
-    fun newInstance() = AuthFragment()
+    private const val textSizeProp = "transition:textsize"
+    private val properties = arrayOf(textSizeProp)
+    private val textSizeProperty = TextSizeProperty()
+  }
+
+  class TextSizeProperty : Property<TextView, Float>(Float::class.java, "textSize") {
+    override fun get(textView: TextView): Float = textView.textSize
+    override fun set(textView: TextView, textSizePixels: Float) =
+      textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSizePixels)
   }
 }

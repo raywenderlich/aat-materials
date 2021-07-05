@@ -40,12 +40,41 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.raywenderlich.cinematic.databinding.FragmentSignupBinding
+import androidx.transition.ChangeBounds
+import androidx.transition.ChangeTransform
+import androidx.transition.TransitionSet
+import com.google.android.material.transition.MaterialSharedAxis
+import com.raywenderlich.cinematic.R
+import com.raywenderlich.cinematic.TextSizeTransition
 
 class SignupFragment : Fragment() {
   private val viewModel by activityViewModels<AuthViewModel>()
 
   private var _binding: FragmentSignupBinding? = null
   private val binding get() = _binding!!
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+      duration = 1000
+    }
+
+    val set = TransitionSet()
+
+    val changeBounds = ChangeBounds()
+    changeBounds.addTarget(R.id.logo)
+    set.addTransition(changeBounds)
+
+    val changeTransform = ChangeTransform()
+    changeTransform.addTarget(R.id.logo)
+    set.addTransition(changeTransform)
+
+    val textSize = TextSizeTransition()
+    textSize.addTarget(R.id.logo)
+    set.addTransition(textSize)
+
+    sharedElementEnterTransition = set
+  }
 
   override fun onCreateView(
       inflater: LayoutInflater, container: ViewGroup?,
