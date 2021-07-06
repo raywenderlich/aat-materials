@@ -12,6 +12,10 @@
     tools:layout="@layout/fragment_popular">
     <action
       android:id="@+id/action_popularMoviesFragment_to_movieDetailsFragment"
+      app:enterAnim="@anim/nav_graph_enter"
+      app:exitAnim="@anim/nav_graph_exit"
+      app:popEnterAnim="@anim/nav_graph_pop_enter"
+      app:popExitAnim="@anim/nav_graph_pop_exit"
       app:destination="@id/movieDetailsFragment" />
   </fragment>
 
@@ -22,6 +26,10 @@
     tools:layout="@layout/fragment_favorites">
     <action
       android:id="@+id/action_favoriteMoviesFragment_to_movieDetailsFragment"
+      app:enterAnim="@anim/nav_graph_enter"
+      app:exitAnim="@anim/nav_graph_exit"
+      app:popEnterAnim="@anim/nav_graph_pop_enter"
+      app:popExitAnim="@anim/nav_graph_pop_exit"
       app:destination="@id/movieDetailsFragment" />
   </fragment>
   <fragment
