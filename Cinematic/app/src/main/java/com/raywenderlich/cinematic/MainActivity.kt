@@ -34,15 +34,19 @@
 package com.raywenderlich.cinematic
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import androidx.transition.Slide
+import androidx.transition.TransitionManager
 import com.raywenderlich.cinematic.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
   lateinit var binding: ActivityMainBinding
+  private var comingFromDetails = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -57,10 +61,31 @@ class MainActivity : AppCompatActivity() {
     navController.addOnDestinationChangedListener { _, destination, _ ->
 
       when (destination.id) {
-        R.id.movieDetailsFragment -> binding.bottomNav.visibility = View.GONE
-        else -> binding.bottomNav.visibility = View.VISIBLE
+        R.id.movieDetailsFragment -> {
+          animateBottomTabVisibility()
+          comingFromDetails = true
+        }
+        else -> {
+          if (comingFromDetails) {
+            animateBottomTabVisibility()
+          }
+          comingFromDetails = false
+        }
       }
     }
+  }
+
+  override fun onEnterAnimationComplete() {
+    super.onEnterAnimationComplete()
+    animateBottomTabVisibility()
+  }
+
+  private fun animateBottomTabVisibility() {
+    val slide = Slide(Gravity.BOTTOM)
+    slide.addTarget(binding.bottomNav)
+    TransitionManager.beginDelayedTransition(binding.root, slide)
+    binding.bottomNav.visibility =
+      if (binding.bottomNav.visibility == View.VISIBLE) View.GONE else View.VISIBLE
   }
 
   override fun finish() {
