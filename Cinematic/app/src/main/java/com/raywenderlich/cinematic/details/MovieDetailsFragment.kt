@@ -36,13 +36,19 @@ package com.raywenderlich.cinematic.details
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.imageLoader
 import coil.load
+import coil.request.ImageRequest
 import coil.transform.BlurTransformation
 import com.raywenderlich.cinematic.R
 import com.raywenderlich.cinematic.databinding.FragmentDetailsBinding
@@ -50,6 +56,7 @@ import com.raywenderlich.cinematic.model.Movie
 import com.raywenderlich.cinematic.util.Constants.IMAGE_BASE
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
+import kotlin.math.hypot
 
 class MovieDetailsFragment : Fragment(R.layout.fragment_details) {
 
@@ -95,13 +102,47 @@ class MovieDetailsFragment : Fragment(R.layout.fragment_details) {
     })
   }
 
+  override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
+    return AnimationUtils.loadAnimation(requireContext(), nextAnim).apply {
+      setAnimationListener(object: Animation.AnimationListener {
+        override fun onAnimationStart(animation: Animation?){}
+        override fun onAnimationRepeat(animation: Animation?) {}
+        override fun onAnimationEnd(animation: Animation?) {
+          if (enter) {
+            viewModel.movie.observe(viewLifecycleOwner) {
+              animateMoviePosterIn(it)
+            }
+          }
+        }
+      })
+    }
+  }
+
+  private fun animateMoviePosterIn(movie: Movie) {
+    val request = ImageRequest.Builder(requireContext())
+      .data(IMAGE_BASE + movie.backdropPath)
+      .target(binding.poster)
+      .listener(onSuccess = { _, _ ->
+        val view = binding.posterContainer
+        view.doOnPreDraw {
+          val cx = view.width / 2
+          val cy = view.height / 2
+
+          val finalRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+          val anim = ViewAnimationUtils.createCircularReveal(view, cx, cy, 0f, finalRadius)
+          view.visibility = View.VISIBLE
+          anim.start()
+        }
+      })
+      .build()
+
+    requireContext().imageLoader.enqueue(request)
+  }
+
   private fun renderUi(movie: Movie) {
     binding.backdrop.load(IMAGE_BASE + movie.backdropPath) {
       crossfade(true)
       transformations(BlurTransformation(requireContext()))
-    }
-    binding.poster.load(IMAGE_BASE + movie.posterPath) {
-      crossfade(true)
     }
 
     binding.title.text = movie.title
